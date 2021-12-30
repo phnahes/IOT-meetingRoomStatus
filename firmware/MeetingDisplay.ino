@@ -9,16 +9,18 @@
 //#include "images.h"
 
 // Initialize the OLED display using Arduino Wire:
-SSD1306Wire display(0x3c, 5, 4);   // ADDRESS, SDA, SCL  -  SDA and SCL usually populate automatically based on your board's pins_arduino.h e.g. https://github.com/esp8266/Arduino/blob/master/variants/nodemcu/pins_arduino.h
+//SSD1306Wire display(0x3c, 5, 4);   // ADDRESS, SDA, SCL  -  SDA and SCL usually populate automatically based on your board's pins_arduino.h e.g. https://github.com/esp8266/Arduino/blob/master/variants/nodemcu/pins_arduino.h
+//SSD1306Wire display(0x3c, 2, 0);
+SSD1306Wire display(0x3c, 2, 0, GEOMETRY_128_64, I2C_ONE, 400000); //set I2C frequency to 400kHz
 
 
 /* 1. Define the WiFi credentials */
-#define WIFI_SSID "************"
-#define WIFI_PASSWORD "**********"
+#define WIFI_SSID "*************"
+#define WIFI_PASSWORD "*************"
 #define WIFI_HOSTNAME "iot-meeting"
 
-#define FIREBASE_HOST "https://**************.firebaseio.com"
-#define FIREBASE_AUTH "******************"
+#define FIREBASE_HOST "https://***********.firebaseio.com"
+#define FIREBASE_AUTH "***************"
 
 boolean bypass;
 String pos;
@@ -48,9 +50,17 @@ void connectWifi() {
 
 void setup() {
   Serial.begin(115200);
+
+  // Initialising the UI will init the display too.
+  display.init();
+  display.flipScreenVertically();
+  booting();
+
+  // Wifi Connection
   connectWifi();
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  //Firebase.begin(FIREBASE_HOST);
 
   String macaddr  = WiFi.macAddress().c_str();
   String ipaddr   = WiFi.localIP().toString().c_str();
@@ -64,9 +74,17 @@ void setup() {
   Firebase.setString(firebaseData, String("/office") + String("/control/bssid"), bssid);
   Firebase.setString(firebaseData, String("/office") + String("/control/action"), "0");
 
-  // Initialising the UI will init the display too.
-  display.init();
-  display.flipScreenVertically();
+  //Firebase.setString(firebaseData, String("/office") + String("/meeting"), "");
+
+
+}
+
+void booting() {
+  display.setFont(ArialMT_Plain_16);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  //display.drawStringMaxWidth(0, 0, 128,
+  display.drawString(10, 0, "Inicializando..");
+  display.display();
 
 }
 
