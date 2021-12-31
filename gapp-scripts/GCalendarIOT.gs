@@ -1,5 +1,14 @@
+var firebaseUrl = "https://**********.firebaseio.com";
+var secret = "************";
+
+var calendar = "*********@gmail.com";
+
+var cropedCalendar = calendar.substring(0, 17) + "...";
+var mailName   = calendar.substring(0, calendar.lastIndexOf("@"));
+var domainName = calendar.substring(calendar.lastIndexOf("@") +1);
+
 function doGet(e) {
-  var cal = CalendarApp.getCalendarById('**********');
+  var cal = CalendarApp.getCalendarById(calendar);
   if (cal == undefined) {
     return ContentService.createTextOutput('No access to calendar! ');}
   else{
@@ -90,24 +99,35 @@ function formatDate(date){
  */
 
 function connectFirebase() {
+        var base = FirebaseApp.getDatabaseByUrl(firebaseUrl, secret);
         return base;
 }
 
 function readMeetingStatus() {
-        var firebaseUrl = "https://************.firebaseio.com";
-        var secret = "*************";
-        var base = FirebaseApp.getDatabaseByUrl(firebaseUrl, secret);
-        var contact = base.getData("office/meeting");
+        var base = connectFirebase();
+        var contact = base.getData("office/meeting/status");
         Logger.log(contact);
         return contact;
 }
 
 function setMeetingStatus(status) {
-        var firebaseUrl = "https://**********.firebaseio.com";
-        var secret = "***************";
+        //var base = connectFirebase();
+        //var contact = base.getData("office/meeting");
         var base = FirebaseApp.getDatabaseByUrl(firebaseUrl, secret);
         base.setData("office/control/action", "f");
-        base.setData("office/meeting", status);
+        base.setData("office/meeting/status", status);
+        base.setData("office/meeting/calendar", domainName);
 }
 
+// Trigger
+function defineTrigger() {
+ ScriptApp.newTrigger("doGet")
+  .timeBased()
+  .nearMinute(00)
+  .nearMinute(10)
+  .nearMinute(50)
+  .everyMinutes(10)
+  //.inTimezone("America/Sao_Paulo")
+  .create();
+}
 
